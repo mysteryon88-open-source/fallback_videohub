@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Arrange photos on a print-ready sheet and export PNG, JPG, or PDF locally in your browser.">
+  <link rel="icon" type="image/png" href="photo-sheet-icon.png">
+  <link rel="stylesheet" href="styles.css">
+  <title>Photo Sheet</title>
+</head>
+<body>
+<main class="app-shell">
+  <span class="sparkle sparkle--one" aria-hidden="true">✦</span>
+  <span class="sparkle sparkle--two" aria-hidden="true">✧</span>
+  <span class="sparkle sparkle--three" aria-hidden="true">✦</span>
+  <span class="sparkle sparkle--four" aria-hidden="true">✧</span>
+  <span class="sparkle sparkle--five" aria-hidden="true">✦</span>
+  <span class="sparkle sparkle--six" aria-hidden="true">✧</span>
+  <span class="sparkle sparkle--seven" aria-hidden="true">✦</span>
+  <span class="sparkle sparkle--eight" aria-hidden="true">✧</span>
+  <span class="sparkle sparkle--nine" aria-hidden="true">✧</span>
+
+  <header class="topbar">
+    <div class="top-actions">
+      <button id="theme" class="icon-button" type="button" aria-label="Включить тёмную тему">☾</button>
+      <button id="language" class="icon-button language-button" type="button" aria-label="Switch to English">EN</button>
+    </div>
+  </header>
+
+  <div class="workspace">
+    <aside class="sidebar panel" aria-label="Настройки листа">
+      <div class="controls">
+        <div class="inline-fields">
+          <label class="control">
+            <span data-i18n="paperLabel">Бумага</span>
+            <select id="paper">
+              <option value="9x13">9 × 13 cm</option>
+              <option value="10x15" selected>10 × 15 cm</option>
+              <option value="13x18">13 × 18 cm</option>
+              <option value="15x21">15 × 21 cm</option>
+              <option value="20x30">20 × 30 cm</option>
+              <option value="a4">A4</option>
+              <option value="a3">A3</option>
+            </select>
+          </label>
+
+          <label class="control">
+            <span data-i18n="dpiLabel">Разрешение</span>
+            <select id="dpi">
+              <option value="150">150 DPI</option>
+              <option value="300" selected>300 DPI</option>
+              <option value="600">600 DPI</option>
+              <option value="1200">1200 DPI</option>
+            </select>
+          </label>
+        </div>
+
+        <label class="control">
+          <span data-i18n="marginLabel">Поля листа</span>
+          <span class="range-row">
+            <input id="margin" type="range" min="0" max="30" value="5" step="0.5">
+            <input id="marginValue" type="number" min="0" max="30" value="5" step="0.5" inputmode="decimal">
+            <span>mm</span>
+          </span>
+        </label>
+
+        <label class="control">
+          <span data-i18n="gapLabel">Зазор между фото</span>
+          <span class="range-row">
+            <input id="gap" type="range" min="0" max="20" value="2" step="0.5">
+            <input id="gapValue" type="number" min="0" max="20" value="2" step="0.5" inputmode="decimal">
+            <span>mm</span>
+          </span>
+        </label>
+
+        <div class="inline-fields layout-fields">
+          <label class="control">
+            <span data-i18n="orientationLabel">Ориентация</span>
+            <select id="orientation">
+              <option value="portrait" data-i18n="portrait">Книжная</option>
+              <option value="landscape" data-i18n="landscape" selected>Альбомная</option>
+            </select>
+          </label>
+
+          <label class="control">
+            <span data-i18n="gridModeLabel">Сетка</span>
+            <select id="gridMode">
+              <option value="auto" data-i18n="gridAuto">Автоматическая</option>
+              <option value="custom" data-i18n="gridCustom">Своя</option>
+            </select>
+          </label>
+        </div>
+
+        <div id="customGridFields" class="inline-fields" hidden>
+          <label class="control compact-control">
+            <span data-i18n="columnsLabel">Столбцы</span>
+            <input id="columns" type="number" min="1" max="10" value="2" step="1">
+          </label>
+          <label class="control compact-control">
+            <span data-i18n="rowsLabel">Строки</span>
+            <input id="rows" type="number" min="1" max="10" value="2" step="1">
+          </label>
+        </div>
+
+        <label class="toggle-control">
+          <input id="cutMarks" type="checkbox">
+          <span data-i18n="cutMarksLabel">Добавить метки реза</span>
+        </label>
+      </div>
+
+      <div id="drop" class="drop-zone">
+        <div class="photo-picker-actions">
+          <button id="replacePhotos" type="button" data-i18n="choosePhotos">Выбрать фотографии</button>
+          <button id="addPhotos" class="secondary-button" type="button" data-i18n="addPhotos" hidden>Добавить фото</button>
+        </div>
+        <p data-i18n="hint">Перетащите от 1 до 12 JPG, PNG, WEBP или BMP на холст, чтобы добавить</p>
+      </div>
+      <input id="files" type="file" accept="image/jpeg,image/png,image/webp,image/bmp" multiple hidden>
+
+      <div class="sidebar-footer">
+        <p id="status" class="status" role="status" aria-live="polite"></p>
+        <div class="export-actions">
+          <label class="export-format">
+            <span class="sr-only" data-i18n="exportFormatLabel">Формат файла</span>
+            <select id="exportFormat">
+              <option value="png">PNG</option>
+              <option value="jpg">JPG</option>
+              <option value="pdf">PDF</option>
+            </select>
+          </label>
+          <button id="saveFile" class="save-button" type="button" disabled data-i18n="save">Сохранить</button>
+          <button id="print" class="secondary-button print-button" type="button" disabled>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M7 8V3h10v5M7 17H5a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M7 14h10v7H7zM17 11h.01"/>
+            </svg>
+            <span class="sr-only" data-i18n="print">Печать</span>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <section class="preview-stage" data-orientation="landscape" aria-label="Предпросмотр листа" aria-haspopup="menu" aria-keyshortcuts="ArrowLeft ArrowRight Alt+ArrowLeft Alt+ArrowRight Shift+F10" tabindex="0">
+      <span class="stage-sparkle stage-sparkle--left" aria-hidden="true">✦</span>
+      <span class="stage-sparkle stage-sparkle--bottom" aria-hidden="true">✧</span>
+      <span class="stage-sparkle stage-sparkle--top-left" aria-hidden="true">✧</span>
+      <span class="stage-sparkle stage-sparkle--right" aria-hidden="true">✦</span>
+      <canvas id="preview" hidden></canvas>
+      <div id="reorderTarget" class="canvas-reorder-target" aria-hidden="true" hidden></div>
+      <div id="emptyPreview" class="empty-preview" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+      <div class="canvas-drop-message" data-i18n="dropToAdd">Отпустите фото, чтобы добавить</div>
+    </section>
+  </div>
+
+  <div id="photoMenu" class="photo-menu" role="menu" hidden></div>
+
+</main>
+
+<div id="printHost" aria-hidden="true"><img id="printImage" alt=""></div>
+<style id="pageStyle"></style>
+<script defer src="photo-sheet.js"></script>
+</body>
+</html>
