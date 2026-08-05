@@ -46,7 +46,7 @@
         needPhotos: "Choose at least one supported JPG, PNG, WEBP, or BMP image.",
         photoLimit: "Maximum: 12 photos. Remove the extra files and try again.",
         tooLarge:
-          "This paper size and DPI need too much memory. Reduce the size or DPI.",
+          "The preview is too large. You can still try to save the file, but it may take time or fail if the browser runs out of memory.",
         gridTooSmall: "The grid has fewer cells than selected photos.",
         cellsDoNotFit: "These photo cells do not fit on the selected paper.",
         invalidPaper: "The selected paper size is unavailable.",
@@ -98,7 +98,7 @@
         photoLimit:
           "Максимум 12 фотографий. Уберите лишние файлы и попробуйте снова.",
         tooLarge:
-          "Этот размер бумаги и DPI требуют слишком много памяти. Уменьшите формат или DPI.",
+          "Предпросмотр слишком большой. Файл всё равно можно попробовать сохранить, но это займёт время и может не сработать при нехватке памяти.",
         gridTooSmall: "В сетке меньше ячеек, чем выбрано фотографий.",
         cellsDoNotFit: "Ячейки такого размера не помещаются на выбранной бумаге.",
         invalidPaper: "Выбранный формат бумаги недоступен.",
@@ -503,8 +503,8 @@
 
     const MAX_PIXELS = 64_000_000;
 
-    function renderSheet(canvas, photos, plan, drawCutMarks) {
-      if (plan.widthPx * plan.heightPx > MAX_PIXELS) throw new Error("TOO_LARGE");
+    function renderSheet(canvas, photos, plan, drawCutMarks, maxPixels = MAX_PIXELS) {
+      if (plan.widthPx * plan.heightPx > maxPixels) throw new Error("TOO_LARGE");
 
       const context = canvas.getContext("2d", { alpha: false, colorSpace: "srgb" });
       canvas.width = plan.widthPx;
@@ -1070,12 +1070,13 @@
     async function renderSelection() {
       if (photos.length === 0) return;
       const version = ++renderVersion;
+      let plan;
       disableExports();
       showStatus("processing");
 
       try {
         await new Promise(resolve => requestAnimationFrame(resolve));
-        const plan = readPlan();
+        plan = readPlan();
         renderSheet(elements.canvas, photos, plan, elements.cutMarks.checked);
         const png = await canvasToPng(elements.canvas, plan.dpi);
         if (version !== renderVersion) return;
@@ -1096,10 +1097,19 @@
         });
       } catch (error) {
         if (version !== renderVersion) return;
-        lastPlan = null;
         lastPng = null;
         elements.canvas.hidden = true;
         elements.emptyPreview.hidden = false;
+        if (error?.message === "TOO_LARGE" && plan) {
+          lastPlan = plan;
+          lastFilename = buildFilename(plan);
+          elements.canvas.width = 0;
+          elements.canvas.height = 0;
+          elements.saveFile.disabled = false;
+          showStatus("tooLarge");
+          return;
+        }
+        lastPlan = null;
         showStatus(errorMessageKey(error));
       }
     }
@@ -1124,17 +1134,28 @@
     }
 
     async function saveSelectedFile() {
-      if (!lastPlan || !lastPng) return;
+      if (!lastPlan) return;
       elements.saveFile.disabled = true;
+      const exportCanvas = lastPng ? elements.canvas : document.createElement("canvas");
       try {
+        if (!lastPng) {
+          showStatus("processing");
+          await new Promise(resolve => requestAnimationFrame(resolve));
+          renderSheet(exportCanvas, photos, lastPlan, elements.cutMarks.checked, Infinity);
+        }
         const format = elements.exportFormat.value;
         const blob = format === "pdf"
-          ? await canvasToPdfBlob(elements.canvas, lastPlan)
-          : format === "jpg" ? await canvasToJpeg(elements.canvas, lastPlan.dpi) : lastPng;
+          ? await canvasToPdfBlob(exportCanvas, lastPlan)
+          : format === "jpg" ? await canvasToJpeg(exportCanvas, lastPlan.dpi) : lastPng ?? await canvasToPng(exportCanvas, lastPlan.dpi);
         downloadBlob(blob, `${lastFilename}.${format}`);
+        if (!lastPng) showStatus("tooLarge");
       } catch {
         showStatus("error");
       } finally {
+        if (!lastPng) {
+          exportCanvas.width = 0;
+          exportCanvas.height = 0;
+        }
         elements.saveFile.disabled = !lastPlan;
       }
     }

@@ -47,4 +47,4 @@ With one selected image, a custom grid fills every cell with a copy of that imag
 
 - A sheet can contain up to 12 different photos.
 - PDF export currently creates one page.
-- Very large paper and DPI combinations are rejected to protect the browser from running out of memory.
+- Very large paper and DPI combinations skip the preview; saving is still available, but the browser may take longer or run out of memory.

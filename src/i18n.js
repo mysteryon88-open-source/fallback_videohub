@@ -40,7 +40,7 @@ const messages = {
     needPhotos: "Choose at least one supported JPG, PNG, WEBP, or BMP image.",
     photoLimit: "Maximum: 12 photos. Remove the extra files and try again.",
     tooLarge:
-      "This paper size and DPI need too much memory. Reduce the size or DPI.",
+      "The preview is too large. You can still try to save the file, but it may take time or fail if the browser runs out of memory.",
     gridTooSmall: "The grid has fewer cells than selected photos.",
     cellsDoNotFit: "These photo cells do not fit on the selected paper.",
     invalidPaper: "The selected paper size is unavailable.",
@@ -92,7 +92,7 @@ const messages = {
     photoLimit:
       "Максимум 12 фотографий. Уберите лишние файлы и попробуйте снова.",
     tooLarge:
-      "Этот размер бумаги и DPI требуют слишком много памяти. Уменьшите формат или DPI.",
+      "Предпросмотр слишком большой. Файл всё равно можно попробовать сохранить, но это займёт время и может не сработать при нехватке памяти.",
     gridTooSmall: "В сетке меньше ячеек, чем выбрано фотографий.",
     cellsDoNotFit: "Ячейки такого размера не помещаются на выбранной бумаге.",
     invalidPaper: "Выбранный формат бумаги недоступен.",

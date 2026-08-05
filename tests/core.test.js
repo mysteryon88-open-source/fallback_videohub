@@ -5,10 +5,24 @@ import * as layout from "../src/layout.js";
 import * as photoUtils from "../src/photos.js";
 import { buildPdf } from "../src/pdf.js";
 import * as dpiMetadata from "../src/png-dpi.js";
+import { renderSheet } from "../src/renderer.js";
 
 const { buildSheetPlan, getCutMarkSegments, resolvePaper } = layout;
 const { moveItem } = photoUtils;
 const { setPngDpi } = dpiMetadata;
+
+test("large sheets require an explicit render override", () => {
+  const canvas = {
+    width: 0,
+    height: 0,
+    getContext: () => ({ fillStyle: "", fillRect() {} })
+  };
+  const plan = { widthPx: 8_001, heightPx: 8_000, cells: [] };
+
+  assert.throws(() => renderSheet(canvas, [], plan, false), error => error.message === "TOO_LARGE");
+  renderSheet(canvas, [], plan, false, Infinity);
+  assert.deepEqual([canvas.width, canvas.height], [8_001, 8_000]);
+});
 
 test("resolvePaper applies orientation to predefined paper and rejects custom sizes", () => {
   assert.deepEqual(resolvePaper("10x15", "portrait"), { widthMm: 100, heightMm: 150 });

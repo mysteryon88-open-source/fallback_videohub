@@ -2,8 +2,8 @@ import { getCutMarkSegments } from "./layout.js";
 
 const MAX_PIXELS = 64_000_000;
 
-export function renderSheet(canvas, photos, plan, drawCutMarks) {
-  if (plan.widthPx * plan.heightPx > MAX_PIXELS) throw new Error("TOO_LARGE");
+export function renderSheet(canvas, photos, plan, drawCutMarks, maxPixels = MAX_PIXELS) {
+  if (plan.widthPx * plan.heightPx > maxPixels) throw new Error("TOO_LARGE");
 
   const context = canvas.getContext("2d", { alpha: false, colorSpace: "srgb" });
   canvas.width = plan.widthPx;
