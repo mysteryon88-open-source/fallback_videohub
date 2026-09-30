@@ -6,7 +6,7 @@ const test = require('node:test');
 const root = path.resolve(__dirname, '..');
 
 function getComposeServiceBlock(compose, serviceName) {
-  const serviceMatch = compose.match(new RegExp(`^  ${serviceName}:\\n((?:    .*\\n?)*)`, 'm'));
+  const serviceMatch = compose.replace(/\r\n/g, '\n').match(new RegExp(`^  ${serviceName}:\\n((?:    .*\\n?)*)`, 'm'));
 
   assert.ok(serviceMatch, `docker-compose.yml should include services.${serviceName}`);
   return serviceMatch[1];
